@@ -73,68 +73,77 @@ public class SubmitControl extends HttpServlet {
 		String taskID = null;
 		HashMap<String, TaskBean> taskMap = null;
 		RequestDispatcher dp = request.getRequestDispatcher("student-submit.jsp");
-		PrintWriter out = response.getWriter();
-		String action = request.getParameter("action");
-		if (action != null) {
-			courseID = request.getParameter("courseID");
-			teacherID = request.getParameter("teacherID");
-			try {
-				taskMap = getTaskMap(courseID, teacherID);
-				request.setAttribute("taskMap", taskMap);
-			} catch (CommException e) {
-				request.setAttribute("msg", e.getMessage());
+		
+		// 获取登录学生的学号和姓名。
+	    HttpSession session = request.getSession();
+        StudentBean student = (StudentBean)session.getAttribute("person");
+        studentID = student.getPersonID();
+        studentName = student.getPersonName();
+		
+		try {
+			// 分析表单参数
+			DiskFileItemFactory factory = new DiskFileItemFactory();
+			ServletContext servletContext = this.getServletConfig().getServletContext();
+			File repository = (File) servletContext.getAttribute("javax.servlet.context.tempdir");
+			factory.setRepository(repository);
+			ServletFileUpload upload = new ServletFileUpload(factory);		
+			List<FileItem> items = upload.parseRequest(request);
+			Iterator<FileItem> iter = items.iterator();
+			boolean toUpload = false;
+			FileItem item = null;
+			while (iter.hasNext()) {
+				item = iter.next();
+			    if (item.isFormField()) {
+			        String fieldName = item.getFieldName();
+			        String value = item.getString();
+			        if ("courseID".equals(fieldName)) {
+			        	courseID = value;
+			        	request.setAttribute("courseID", courseID);
+			        }
+			        if ("teacherID".equals(fieldName)) {
+			        	teacherID = value;
+			        	request.setAttribute("teacherID", teacherID);
+			        }
+			        if ("taskID".equals(fieldName)) {
+			        	taskID = value;
+			        	request.setAttribute("taskID", taskID);
+			        }
+			    } else {
+			    	if (item.getName().length() > 0)  // 表单中的文件名不为空
+			    		toUpload = true;
+			    }
 			}
-		} else {
-			try {
-				DiskFileItemFactory factory = new DiskFileItemFactory();
-				ServletContext servletContext = this.getServletConfig().getServletContext();
-				File repository = (File) servletContext.getAttribute("javax.servlet.context.tempdir");
-				factory.setRepository(repository);
-				ServletFileUpload upload = new ServletFileUpload(factory);		
-			    HttpSession session = request.getSession();
-		        StudentBean student = (StudentBean)session.getAttribute("person");
-		        studentID = student.getPersonID();
-		        studentName = student.getPersonName();
-				List<FileItem> items = upload.parseRequest(request);
-				Iterator<FileItem> iter = items.iterator();
-				while (iter.hasNext()) {
-					FileItem item = iter.next();
-				    if (item.isFormField()) {
-				        String fieldName = item.getFieldName();
-				        String value = item.getString();
-				        if ("courseID".equals(fieldName)) courseID = value;
-				        if ("teacherID".equals(fieldName)) teacherID = value;
-				        if ("taskID".equals(fieldName)) taskID = value;
-				    } else {
-				    	String dir = SystemBean.system.getStorePath();
-				    	dir = parseDirectory(dir);
-				    	File uploadedDir = new File(dir);
-				    	uploadedDir.mkdir();
-				    	String fileName = item.getName();
-				    	String extension = getFileExtension(fileName);
-				    	String path = dir + "/" + courseID + "-" + taskID + "-" 
-				    				  + studentID + "-" + studentName + "." + extension;
-				    	File uploadedFile = new File(path);
-				    	item.write(uploadedFile);
-				    	TaskItemBean taskItem = new TaskItemBean();
-				    	boolean ok = taskItem.read(taskID, studentID);
-				    	if (!ok) {
-				    		taskItem.setTaskID(taskID);
-				    		taskItem.setStudentID(studentID);
-				    		taskItem.insert();
-				    	}
-				    }
-				}
-			} catch (CommException e) {
-				request.setAttribute("msg", e.getMessage());
-			} catch (Exception e) {
-				request.setAttribute("msg", "文件上传错误！");
+			taskMap = getTaskMap(courseID, teacherID);
+			request.setAttribute("taskMap", taskMap);
+			
+			// 上传文件
+			if (toUpload) {
+		    	String dir = SystemBean.system.getStorePath();
+		    	dir = parseDirectory(dir);
+		    	File uploadedDir = new File(dir);
+		    	uploadedDir.mkdir();
+		    	String fileName = item.getName();
+		    	String extension = getFileExtension(fileName);
+		    	String path = dir + "/" + courseID + "-" + taskID + "-" 
+		    				  + studentID + "-" + studentName + "." + extension;
+		    	File uploadedFile = new File(path);
+		    	item.write(uploadedFile);
+		    	TaskItemBean taskItem = new TaskItemBean();
+		    	boolean ok = taskItem.read(taskID, studentID);
+		    	if (!ok) {
+		    		taskItem.setTaskID(taskID);
+		    		taskItem.setStudentID(studentID);
+		    		taskItem.insert();
+		    	}
 			}
-		} 
-		request.setAttribute("courseID", courseID);
-		request.setAttribute("teacherID", teacherID);
-		request.setAttribute("taskID", taskID);
-		dp.forward(request, response);
+			
+			// 跳转回student-submit.jsp页面
+			dp.forward(request, response);
+		} catch (CommException e) {
+			request.setAttribute("msg", e.getMessage());
+		} catch (Exception e) {
+			request.setAttribute("msg", "文件上传错误！");
+		}
 	}
 
 	/**

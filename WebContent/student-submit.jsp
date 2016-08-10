@@ -14,7 +14,7 @@
 function getTaskList() {
 	var courseID = document.myform.courseID.value;
 	var teacherID = document.myform.teacherID.value;
-	var action = "SubmitControl?action=getTaskList&courseID=" + courseID + "&teacherID=" + teacherID;
+	var action = "SubmitControl";
 	document.myform.action = action;
 	document.myform.submit();
 }
@@ -41,7 +41,6 @@ function pageLoad() {
 	String courseID = (String)request.getAttribute("courseID");
 	String teacherID = (String)request.getAttribute("teacherID");
 	String taskID = (String)request.getAttribute("taskID");
-	out.println(taskID);
 	String studentID = student.getPersonID();
 	String studentName = student.getPersonName();
 	String tclassID = student.getTclassID();
