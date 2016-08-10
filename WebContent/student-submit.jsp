@@ -11,17 +11,17 @@
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
 <script>
 
-function getTask() {
+function getTaskList() {
 	var courseID = document.myform.courseID.value;
 	var teacherID = document.myform.teacherID.value;
-	var action = "SubmitControl?action=getTask&courseID=" + courseID + "&teacherID=" + teacherID;
+	var action = "SubmitControl?action=getTaskList&courseID=" + courseID + "&teacherID=" + teacherID;
 	document.myform.action = action;
 	document.myform.submit();
 }
 
 function pageLoad() {
 	var firstLoad = document.getElementById("firstLoad");
-	if (firstLoad) getTask();
+	if (firstLoad) getTaskList();
 }
 
 </script>
@@ -53,7 +53,7 @@ function pageLoad() {
 
 <form action="SubmitControl" method="post" name="myform" enctype="multipart/form-data">
 课程：
-<select name="courseID" onchange="getTask()">
+<select name="courseID" onchange="getTaskList()">
 <% 
 if (courseMap != null) {
 	for (HashMap.Entry<String, CourseBean> entry : courseMap.entrySet()) {
@@ -72,7 +72,7 @@ if (courseMap != null) {
 </select> 
 
 教师：
-<select name="teacherID" onchange="getTask()">
+<select name="teacherID" onchange="getTaskList()">
 <% 
 if (teacherMap != null) {
 	for (HashMap.Entry<String, TeacherBean> entry : teacherMap.entrySet()) {
