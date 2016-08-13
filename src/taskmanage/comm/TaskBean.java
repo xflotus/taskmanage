@@ -1,21 +1,30 @@
 package taskmanage.comm;
 
 import java.sql.*;
-import java.util.HashMap;
+import java.util.ArrayList;
 
 public class TaskBean extends Persistence {
-	private String taskID;
+	private int taskID;
+	private String taskName;
 	private String taskDesc;
 	private String courseID;
 	private String tclassID;
 	private String teacherID;
 	
-	public String getTaskID() {
+	public int getTaskID() {
 		return taskID;
 	}
 	
-	public void setTaskID(String taskID) {
+	public void setTaskID(int taskID) {
 		this.taskID = taskID;
+	}
+	
+	public String getTaskName() {
+		return taskName;
+	}
+	
+	public void setTaskName(String taskName) {
+		this.taskName = taskName;
 	}
 	
 	public String getTaskDesc() {
@@ -50,18 +59,24 @@ public class TaskBean extends Persistence {
 		this.teacherID = teacherID;
 	}
 	
-	public boolean read(String taskID) throws CommException {
+	public boolean read(String taskName, String courseID, String tclassID, String teacherID) 
+			throws CommException {
 		loadDBDriver();
 		connectDB();
 		try {
 			Statement stmt = conn.createStatement();
-			String sql = "select * from Task where taskID='" + taskID + "'";
+			String sql = "select * from Task where " + 
+						 "taskName='" + taskName + "' and " + 
+						 "courseID='" + courseID + "' and " + 
+						 "tclassID='" + tclassID + "' and " + 
+						 "teacherID='" + teacherID + "'";
 			ResultSet rs = stmt.executeQuery(sql);
 			rs.last();
 			int recs = rs.getRow(); 
 			if (recs == 1) {
 				rs.first();
-				this.taskID = rs.getString("taskID");
+				this.taskID = rs.getInt("taskID");
+				this.taskName = rs.getString("taskName");
 				this.taskDesc = rs.getString("taskDesc");
 				this.courseID = rs.getString("courseID");
 				this.tclassID = rs.getString("tclassID");
@@ -85,11 +100,12 @@ public class TaskBean extends Persistence {
 			Statement stmt = conn.createStatement();
 			String sql = "update Task set " + 
 					"taskID='" + taskID + "', " +
+					"taskName='" + taskName + "', " +
 					"taskDesc='" + taskDesc + "', " +
 					"courseID='" + courseID + "', " +
 					"tclassID='" + tclassID + "', " +	
-					"teacherID='" + teacherID + "'" +
-					"where taskID='" + taskID + "'";
+					"teacherID='" + teacherID + "' " +
+					"where taskName='" + taskName + "'";
 			int count = stmt.executeUpdate(sql);
 			if (count == 0) {
 				disconnectDB();
@@ -108,8 +124,8 @@ public class TaskBean extends Persistence {
 		connectDB();
 		try {
 			Statement stmt = conn.createStatement();
-			String sql = "insert into Task values(" + 
-					"'" + taskID + "', " +
+			String sql = "insert into Task values(null, " + 
+					"'" + taskName + "', " +
 					"'" + taskDesc + "', " +
 					"'" + courseID + "', " + 
 					"'" + tclassID + "', " + 
@@ -127,12 +143,17 @@ public class TaskBean extends Persistence {
 		return true;
 	}
 	
-	public boolean delete(String taskID) throws CommException {
+	public boolean delete(String taskName, String courseID, String tclassID, String teacherID) 
+			throws CommException {
 		loadDBDriver();
 		connectDB();
 		try {
 			Statement stmt = conn.createStatement();
-			String sql = "delete from Task where taskID='" + taskID + "'";
+			String sql = "delete from Task where " + 
+						 "taskName='" + taskName + "' and " +
+						 "courseID='" + courseID + "' and " +
+						 "tclassID='" + tclassID + "' and " +
+						 "teacherID='" + teacherID + "'";
 			int count = stmt.executeUpdate(sql);
 			if (count == 0) {
 				disconnectDB();
@@ -146,32 +167,33 @@ public class TaskBean extends Persistence {
 		return true;
 	}
 	
-	public static HashMap<String, TaskBean> readList(String condition) 
+	public static ArrayList<TaskBean> readList(String condition) 
 			throws CommException {
 		Persistence pst = new Persistence();
 		pst.loadDBDriver();
 		pst.connectDB();
-		HashMap<String, TaskBean> taskMap;
+		ArrayList<TaskBean> taskList;
 		try {
-			taskMap = new HashMap<String, TaskBean>();
+			taskList = new ArrayList<TaskBean>();
 			Statement stmt = pst.conn.createStatement();
 			String sql = "select * from Task where " + condition;
 			ResultSet rs = stmt.executeQuery(sql);
 			while (rs.next()) {
 				TaskBean task = new TaskBean();
-				task.setTaskID(rs.getString("taskID"));
+				task.setTaskID(rs.getInt("taskID"));
+				task.setTaskName(rs.getString("taskName"));
 				task.setTaskDesc(rs.getString("taskDesc"));
 				task.setCourseID(rs.getString("courseID"));
 				task.setTclassID(rs.getString("tclassID"));
 				task.setTeacherID(rs.getString("teacherID"));
-				taskMap.put(rs.getString("taskID"), task);
+				taskList.add(task);
 			}
 		} catch (SQLException e) {
 			throw new CommException("读作业数据列表失败！");
 		} finally {
 			pst.disconnectDB();
 		}
-		return taskMap;
+		return taskList;
 	}
 	
 }

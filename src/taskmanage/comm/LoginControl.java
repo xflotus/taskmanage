@@ -1,21 +1,26 @@
 package taskmanage.comm;
 
 import java.io.*;
+import java.net.*;
 import javax.servlet.*;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.*;
-
-import taskmanage.admin.SystemBean;
+import taskmanage.admin.*;
 import taskmanage.student.*;
 import taskmanage.teacher.*;
 
 /**
  * Servlet implementation class ControlLogin
  */
-@WebServlet("/ControlLogin")
+@WebServlet("/LoginControl")
 public class LoginControl extends HttpServlet {
 	private static final long serialVersionUID = 1L;
-       
+    
+	private void returnMsg(HttpServletResponse response, String url, String msg) 
+			throws ServletException, IOException {
+		msg = URLEncoder.encode(msg, "UTF-8");
+		response.sendRedirect(url + "?msg=" + msg);
+	}
     /**
      * @see HttpServlet#HttpServlet()
      */
@@ -35,48 +40,40 @@ public class LoginControl extends HttpServlet {
 		String userID = request.getParameter("userID");
 		String password = request.getParameter("password");
 		String type = request.getParameter("type");
-		RequestDispatcher dpfail = request.getRequestDispatcher("login.jsp");
-		RequestDispatcher dpsucc = request.getRequestDispatcher(type + ".jsp");
+		String failURL = "login.jsp";
+		String succURL = type + ".jsp";
+		HttpSession session = request.getSession();
+		session.removeAttribute("msg");
+
 		PersonBean person;
 		if ("student".equals(type)) person = new StudentBean();
 		else if ("teacher".equals(type)) person = new TeacherBean();
 		else if ("admin".equals(type)) {
 			String adminPassword = SystemBean.system.getAdminPassword();
-			if (adminPassword.equals(password)) 
-				dpsucc.forward(request, response);
-			else {
-				request.setAttribute("msg", "口令错误！");
-				dpfail.forward(request, response);
-			}
+			if (adminPassword.equals(password))
+				response.sendRedirect(succURL);
+			else
+				returnMsg(response, failURL, "口令错误！");
+			return;
+		} else {
+			returnMsg(response, failURL, "错误的用户类型！");
 			return;
 		}
-		else {
-			request.setAttribute("msg", "错误的用户类型！");
-			dpfail.forward(request, response);
-			return;
-		}
+		
 		try {
 			boolean ok = person.read(userID);
-			if (!ok) {
-				request.setAttribute("msg", "用户不存在！");
-				dpfail.forward(request, response);
-			}
-			if (!password.equals(person.getPassword())) {
-				request.setAttribute("msg", "口令错误！");
-				dpfail.forward(request, response);
-			} else {
-				HttpSession session = request.getSession();
+			if (!ok) 
+				returnMsg(response, failURL, "用户不存在！");
+			else if (!password.equals(person.getPassword())) 
+				returnMsg(response, failURL, "口令错误！");
+			else {
 				session.setAttribute("person", person);
-				ServletContext application = getServletContext();
-				application.setAttribute("tclassMap", TclassBean.readList("true"));
-				application.setAttribute("courseMap", CourseBean.readList("true"));
-				application.setAttribute("teacherMap", TeacherBean.readList("true"));
-				dpsucc.forward(request, response);
+				response.sendRedirect(succURL);
 			}
 		} catch (CommException e) {
-			request.setAttribute("msg", e.getMessage());
-			dpfail.forward(request, response);
-		}	
+			returnMsg(response, failURL, e.getMessage());
+		}
+		return;
 	}
 
 	/**

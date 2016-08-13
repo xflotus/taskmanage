@@ -95,14 +95,14 @@ public class TeacherBean extends PersonBean {
 		return true;
 	}
 	
-	public static HashMap<String, TeacherBean> readList(String condition) 
+	public static ArrayList<TeacherBean> readList(String condition) 
 			throws CommException {
 		Persistence pst = new Persistence();
 		pst.loadDBDriver(); 
 		pst.connectDB();
-		HashMap<String, TeacherBean> teacherMap;
+		ArrayList<TeacherBean> teacherList;
 		try {
-			teacherMap = new HashMap<String, TeacherBean>();
+			teacherList = new ArrayList<TeacherBean>();
 			Statement stmt = pst.conn.createStatement();
 			String sql = "select * from Teacher where " + condition;
 			ResultSet rs = stmt.executeQuery(sql);
@@ -111,13 +111,13 @@ public class TeacherBean extends PersonBean {
 				teacher.setPersonID(rs.getString("personID"));
 				teacher.setPersonName(rs.getString("personName"));
 				teacher.setPassword(rs.getString("password"));
-				teacherMap.put(rs.getString("personID"), teacher);
+				teacherList.add(teacher);
 			}
 		} catch (SQLException e) {
 			throw new CommException("读教师数据列表失败！");
 		}
 		pst.disconnectDB();
-		return teacherMap;
+		return teacherList;
 	}
 
 }

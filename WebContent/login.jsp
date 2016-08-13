@@ -7,7 +7,7 @@
 <title> 登录  </title>
 </head>
 <body>
-<form action="ControlLogin" method="post">
+<form name="myform" action="LoginControl" method="post">
 <table>
 	<tr> 
 		<td> 用户名：</td>
@@ -26,10 +26,9 @@
 </form>
 
 <%
-	String msg = (String)request.getAttribute("msg");
-	if (msg != null) {
-		out.println(msg);
-	}
+	request.setCharacterEncoding("UTF-8");
+	String msg = (String)request.getParameter("msg");
+	if (msg != null) out.println(msg);
 %>
 </body>
 </html>

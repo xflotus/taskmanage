@@ -109,14 +109,14 @@ public class CourseBean extends Persistence {
 		return true;
 	}
 	
-	public static HashMap<String, CourseBean> readList(String condition)
+	public static ArrayList<CourseBean> readList(String condition)
 			throws CommException {
 		Persistence pst = new Persistence();
 		pst.loadDBDriver();
 		pst.connectDB();
-		HashMap<String, CourseBean> courseMap;
+		ArrayList<CourseBean> courseList;
 		try {
-			courseMap = new HashMap<String, CourseBean>();
+			courseList = new ArrayList<CourseBean>();
 			Statement stmt = pst.conn.createStatement();
 			String sql = "select * from Course where " + condition;
 			ResultSet rs = stmt.executeQuery(sql);
@@ -124,12 +124,12 @@ public class CourseBean extends Persistence {
 				CourseBean course = new CourseBean();
 				course.setCourseID(rs.getString("courseID"));
 				course.setCourseName(rs.getString("courseName"));
-				courseMap.put(rs.getString("courseID"), course);
+				courseList.add(course);
 			}
 		} catch (SQLException e) {
 			throw new CommException("读课程数据列表失败！");
 		}
 		pst.disconnectDB();
-		return courseMap;
+		return courseList;
 	}
 }

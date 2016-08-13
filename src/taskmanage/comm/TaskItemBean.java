@@ -1,16 +1,18 @@
 package taskmanage.comm;
 
 import java.sql.*;
+import java.util.ArrayList;
 
 public class TaskItemBean extends Persistence {
-	private String taskID;
+	private int taskID;
 	private String studentID;
+	private String fileExt;
 	
-	public String getTaskID() {
+	public int getTaskID() {
 		return taskID;
 	}
 	
-	public void setTaskID(String taskID) {
+	public void setTaskID(int taskID) {
 		this.taskID = taskID;
 	}
 	
@@ -22,21 +24,36 @@ public class TaskItemBean extends Persistence {
 		this.studentID = studentID;
 	}
 	
-	public boolean read(String taskID, String studentID) 
+	public String getFileExt() {
+		return fileExt;
+	}
+	
+	public void setFileExt(String fileExt) {
+		this.fileExt = fileExt;
+	}
+	
+	public boolean read(String taskName, String courseID, String tclassID, 
+						String teacherID, String studentID)
 			throws CommException {
 		loadDBDriver();
 		connectDB();
 		try {
 			Statement stmt = conn.createStatement();
-			String sql = "select * from TaskItem where " + 
-						 "taskID='" + taskID + "' and studentID='" + studentID + "'";
+			String sql = "select taskitem.* from task, taskitem where " + 
+						 "task.taskID=taskitem.taskID and " +
+						 "taskName='" + taskName + "' and " +
+						 "courseID='" + courseID + "' and " +
+						 "tclassID='" + tclassID + "' and " +
+						 "teacherID='" + teacherID + "' and " + 
+						 "studentID='" + studentID + "'";
 			ResultSet rs = stmt.executeQuery(sql);
 			rs.last();
 			int recs = rs.getRow(); 
 			if (recs == 1) {
 				rs.first();
-				this.taskID = rs.getString("taskID");
+				this.taskID = rs.getInt("taskID");
 				this.studentID = rs.getString("studentID");
+				this.fileExt = rs.getString("fileExt");
 			} else {
 				disconnectDB();
 				return false;
@@ -57,6 +74,7 @@ public class TaskItemBean extends Persistence {
 			String sql = "update TaskItem set " + 
 						 "taskID='" + taskID + "'" +
 						 "studentID='" + studentID + "'" +
+						 "fileExt='" + fileExt + "'" +
 						 "where taskID='" + taskID + "' and studentID='" + studentID + "'";
 			int count = stmt.executeUpdate(sql);
 			if (count == 0) {
@@ -78,7 +96,8 @@ public class TaskItemBean extends Persistence {
 			Statement stmt = conn.createStatement();
 			String sql = "insert into TaskItem values(" + 
 						 "'" + taskID + "', " +
-						 "'" + studentID + "')";
+						 "'" + studentID + "', " +
+						 "'" + fileExt + "')";
 			int count = stmt.executeUpdate(sql);
 			if (count == 0) {
 				disconnectDB();
@@ -92,25 +111,33 @@ public class TaskItemBean extends Persistence {
 		return true;
 	}
 	
-	public boolean delete(String taskItemID) throws CommException {
-		loadDBDriver();
-		connectDB();
+	public static ArrayList<TaskItemBean> readList(String condition) 
+			throws CommException {
+		Persistence pst = new Persistence();
+		pst.loadDBDriver();
+		pst.connectDB();
+		ArrayList<TaskItemBean> taskItemList;
 		try {
-			Statement stmt = conn.createStatement();
-			String sql = "delete from TaskItem where taskItemID=" + taskItemID;
-			int count = stmt.executeUpdate(sql);
-			if (count == 0) {
-				disconnectDB();
-				return false;
-			}			
+			taskItemList = new ArrayList<TaskItemBean>();
+			Statement stmt = pst.conn.createStatement();
+			String sql = "select TaskItem.* from Task, TaskItem where Task.taskID=TaskItem.taskID and " + condition;
+			ResultSet rs = stmt.executeQuery(sql);
+			while (rs.next()) {
+				TaskItemBean taskItem = new TaskItemBean();
+				int taskID = rs.getInt("taskID");
+				String studentID = rs.getString("studentID");
+				String fileExt = rs.getString("fileExt");
+				taskItem.setTaskID(taskID);
+				taskItem.setStudentID(studentID);
+				taskItem.setFileExt(fileExt);
+				taskItemList.add(taskItem);
+			}
 		} catch (SQLException e) {
-			throw new CommException("删除作业项数据失败！");
+			throw new CommException("读作业项数据列表失败！");
 		} finally {
-			disconnectDB();
+			pst.disconnectDB();
 		}
-		return true;
+		return taskItemList;
 	}
-	
-	// 由于作业项需要两个关键字进行索引，因此暂时不设计其Map
 	
 }

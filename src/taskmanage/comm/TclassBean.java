@@ -131,14 +131,14 @@ public class TclassBean extends Persistence {
 		return true;
 	}
 	
-	public static HashMap<String, TclassBean> readList(String condition) 
+	public static ArrayList<TclassBean> readList(String condition) 
 			throws CommException {
 		Persistence pst = new Persistence();
 		pst.loadDBDriver();
 		pst.connectDB();
-		HashMap<String, TclassBean> tclassMap;
+		ArrayList<TclassBean> tclassList;
 		try {
-			tclassMap = new HashMap<String, TclassBean>();
+			tclassList = new ArrayList<TclassBean>();
 			Statement stmt = pst.conn.createStatement();
 			String sql = "select * from Tclass where " + condition;
 			ResultSet rs = stmt.executeQuery(sql);
@@ -148,13 +148,13 @@ public class TclassBean extends Persistence {
 				tclass.setTclassName(rs.getString("tclassName"));
 				tclass.setNumOfStud(rs.getInt("numOfStud"));
 				tclass.setStudRep(rs.getString("studRep"));
-				tclassMap.put(rs.getString("tclassID"), tclass);
+				tclassList.add(tclass);
 			}
 		} catch (SQLException e) {
 			throw new CommException("读班级数据列表失败！");
 		} finally {
 			pst.disconnectDB();
 		}
-		return tclassMap;
+		return tclassList;
 	}
 }
