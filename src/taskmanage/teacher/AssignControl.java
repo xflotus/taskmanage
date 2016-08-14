@@ -1,6 +1,5 @@
 package taskmanage.teacher;
 
-import java.util.*;
 import java.io.*;
 import java.net.*;
 import javax.servlet.*;
@@ -18,7 +17,7 @@ public class AssignControl extends HttpServlet {
 	private void returnMsg(HttpServletResponse response, String url, String msg) 
 			throws ServletException, IOException {
 		msg = URLEncoder.encode(msg, "UTF-8");
-		response.sendRedirect(url + "?firstLoad=no&msg=" + msg);
+		response.sendRedirect(url + "?action=done&msg=" + msg);
 	}
 	
     /**
@@ -37,67 +36,35 @@ public class AssignControl extends HttpServlet {
 		// TODO Auto-generated method stub
 		response.setContentType("text/html; charset=UTF-8");
 		request.setCharacterEncoding("UTF-8");
-		String url = "teacher-assign.jsp";
-		String tclassID = request.getParameter("tclassID");
-		String courseID = request.getParameter("courseID");
-		String taskName = request.getParameter("taskName");
-		String taskDesc = request.getParameter("taskDesc");
-		
 		HttpSession session = request.getSession();
-		TeacherBean teacher = (TeacherBean)session.getAttribute("person");
-		String teacherID = teacher.getPersonID();
-		session.setAttribute("teacherID", teacherID);
-		String teacherName = teacher.getPersonName();
-		session.setAttribute("teacherName", teacherName);
-		ArrayList<TclassBean> tclassList = null;
-		ArrayList<CourseBean> courseList = null;
+		String tclassID = (String)session.getAttribute("tclassID");
+		String courseID = (String)session.getAttribute("courseID");
+		String taskName = (String)session.getAttribute("taskName");
+		String taskDesc = (String)session.getAttribute("taskDesc");
+		String teacherID = (String)session.getAttribute("teacherID");
 		
-		String action = request.getParameter("action");
-		if ("getParameter".equals(action)) {
-			try {
-				tclassList = TclassBean.readList("true");
-				Comparator<TclassBean> comparator1 = new Comparator<TclassBean>() {  
-					   public int compare(TclassBean t1, TclassBean t2) {
-						   return t1.getTclassName().compareTo(t2.getTclassName());
-					   }
-				};
-				Collections.sort(tclassList, comparator1);
-				session.setAttribute("tclassList", tclassList);
-				courseList = CourseBean.readList("true");
-				Comparator<CourseBean> comparator2 = new Comparator<CourseBean>() {  
-					   public int compare(CourseBean c1, CourseBean c2) {
-						   return c1.getCourseName().compareTo(c2.getCourseName());
-					   }
-				};
-				Collections.sort(courseList, comparator2);
-				session.setAttribute("courseList", courseList);
-				returnMsg(response, url, "");
-			} catch (CommException e) {
-				returnMsg(response, url, e.getMessage());
-			}
-		} else {
-			try {
-				session.setAttribute("tclassID", tclassID);
-				session.setAttribute("courseID", courseID);
-				TaskBean task = new TaskBean();
-				boolean ok = task.read(taskName, courseID, tclassID, teacherID);
-				if (!ok) {
-					task.setTaskName(taskName);
-					task.setTaskDesc(taskDesc);
-					task.setCourseID(courseID);
-					task.setTclassID(tclassID);
-					task.setTeacherID(teacherID);
-					ok = task.insert();
-					if (!ok)
-						returnMsg(response, url, "作业数据无法存入数据库！");
-					else
-						returnMsg(response, url, "布置作业成功！");
-				} else
-					returnMsg(response, url, "作业编号已经存在！");
-			} catch(CommException e) {
-				returnMsg(response, url, e.getMessage());
-			}
+		String msg = null;
+		String url = "teacher-assign.jsp";
+		try {
+			TaskBean task = new TaskBean();
+			boolean ok = task.read(taskName, courseID, tclassID, teacherID);
+			if (!ok) {
+				task.setTaskName(taskName);
+				task.setTaskDesc(taskDesc);
+				task.setCourseID(courseID);
+				task.setTclassID(tclassID);
+				task.setTeacherID(teacherID);
+				ok = task.insert();
+				if (!ok)
+					msg = "作业数据无法存入数据库！";
+				else
+					msg = "布置作业成功！";
+			} else
+				msg = "作业编号已经存在！";
+		} catch(CommException e) {
+			msg = e.getMessage();
 		}
+		returnMsg(response, url, msg);
 	}
 
 	/**

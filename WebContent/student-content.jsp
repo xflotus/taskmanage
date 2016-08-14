@@ -8,7 +8,7 @@
 </head>
 <body>
 <a href="student-submit.jsp" target="operation"> 提交作业  </a> <br>
-<a href="student-query.jsp" target="operation"> 作业查询  </a> <br>
+<a href="student-query.jsp" target="operation"> 查询作业  </a> <br>
 <a href="student-modify-info.jsp" target="operation"> 修改个人信息  </a> <br>
 </body>
 </html>
