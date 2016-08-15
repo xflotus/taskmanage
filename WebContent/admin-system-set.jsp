@@ -11,16 +11,17 @@
 <body>
 
 <%
-	String host = SystemBean.system.getHost();
-	String dbuser = SystemBean.system.getDbuser();
-	String dbpassword = SystemBean.system.getDbpassword();
+	String dbhost = SystemBean.getDbhost();
+	String dbuser = SystemBean.getDbuser();
+	String dbpassword = SystemBean.getDbpassword();
+	String storePath = SystemBean.getStorePath();
 %>
 
-<form action="" method="post">
+<form name="form1" action="?action=update" method="post">
 	<table>
 		<tr>
-		<td> 主机：</td>
-		<td> <input type="text" name="host" value="<%=host%>"> <td>
+		<td> 数据库服务器主机：</td>
+		<td> <input type="text" name="host" value="<%=dbhost%>"> <td>
 		</tr>
 		<tr>
 		<td> 数据库用户名：</td>
@@ -30,8 +31,12 @@
 		<td> 数据库口令：</td>
 		<td> <input type="text" name="dbpassword" value="<%=dbpassword%>"> <td>
 		</tr>
+		<tr>
+		<td> 上传文件路径：</td>
+		<td> <input type="text" name="dbpassword" value="<%=storePath%>"> <td>
+		</tr>
 	</table>
-	<input type="submit" name="submit" value="更改设置" >
+	<input type="submit" value="更新设置" />
 </form>
 </body>
 </html>

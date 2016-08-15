@@ -87,7 +87,9 @@ public class SubmitControl extends HttpServlet {
 			}
 			
 			// 开始上传文件
-			String dir = SystemBean.system.getStorePath();
+			if (item.getSize() <= 0) 
+				throw new CommException("请指定一个需要上传的文件！");
+			String dir = SystemBean.getStorePath();
 			dir = parseDirectory(dir);
 			File uploadedDir = new File(dir);
 			uploadedDir.mkdir();

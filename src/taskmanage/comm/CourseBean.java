@@ -23,8 +23,7 @@ public class CourseBean extends Persistence {
 	}
 	
 	public boolean read(String courseID) throws CommException {
-		loadDBDriver();
-		connectDB();
+		Connection conn = connectDB();
 		try {
 			Statement stmt = conn.createStatement();
 			String sql = "select * from Course where courseID='" + courseID + "'";
@@ -36,20 +35,19 @@ public class CourseBean extends Persistence {
 				this.courseID = rs.getString("courseID");
 				this.courseName = rs.getString("courseName");
 			} else {
-				disconnectDB();
+				disconnectDB(conn);
 				return false;
 			}
 		} catch (SQLException e) {
 			throw new CommException("读课程数据失败！");
 		} finally {
-			disconnectDB();
+			disconnectDB(conn);
 		}
 		return true;
 	}
 	
 	public boolean write() throws CommException {
-		loadDBDriver();
-		connectDB();
+		Connection conn = connectDB();
 		try {
 			Statement stmt = conn.createStatement();
 			String sql = "update Course set " + 
@@ -58,20 +56,19 @@ public class CourseBean extends Persistence {
 					"where courseID='" + courseID + "'";
 			int count = stmt.executeUpdate(sql);
 			if (count == 0) {
-				disconnectDB();
+				disconnectDB(conn);
 				return false;
 			}
 		} catch (SQLException e) {
 			throw new CommException("写课程数据失败！");
 		} finally {
-			disconnectDB();	
+			disconnectDB(conn);	
 		}
 		return true;
 	}
 	
 	public boolean insert() throws CommException {
-		loadDBDriver();
-		connectDB();
+		Connection conn = connectDB();
 		try {
 			Statement stmt = conn.createStatement();
 			String sql = "insert into Course values(" +
@@ -79,45 +76,42 @@ public class CourseBean extends Persistence {
 					"'" + courseName + "')";
 			int count = stmt.executeUpdate(sql);
 			if (count == 0) {
-				disconnectDB();
+				disconnectDB(conn);
 				return false;
 			}			
 		} catch (SQLException e) {
 			throw new CommException("插入课程数据失败！");
 		} finally {
-			disconnectDB();
+			disconnectDB(conn);
 		}
 		return true;
 	}
 	
 	public boolean delete(String courseID) throws CommException {
-		loadDBDriver();
-		connectDB();
+		Connection conn = connectDB();
 		try {
 			Statement stmt = conn.createStatement();
 			String sql = "delete from Course where courseID='" + courseID  + "'";
 			int count = stmt.executeUpdate(sql);
 			if (count == 0) {
-				disconnectDB();
+				disconnectDB(conn);
 				return false;
 			}			
 		} catch (SQLException e) {
 			throw new CommException("删除课程数据失败！");
 		} finally {
-			disconnectDB();
+			disconnectDB(conn);
 		}
 		return true;
 	}
 	
 	public static ArrayList<CourseBean> readList(String condition)
 			throws CommException {
-		Persistence pst = new Persistence();
-		pst.loadDBDriver();
-		pst.connectDB();
+		Connection conn = connectDB();
 		ArrayList<CourseBean> courseList;
 		try {
 			courseList = new ArrayList<CourseBean>();
-			Statement stmt = pst.conn.createStatement();
+			Statement stmt = conn.createStatement();
 			String sql = "select * from Course where " + condition;
 			ResultSet rs = stmt.executeQuery(sql);
 			while (rs.next()) {
@@ -129,7 +123,7 @@ public class CourseBean extends Persistence {
 		} catch (SQLException e) {
 			throw new CommException("读课程数据列表失败！");
 		}
-		pst.disconnectDB();
+		disconnectDB(conn);
 		return courseList;
 	}
 }

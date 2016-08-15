@@ -41,8 +41,7 @@ public class TclassBean extends Persistence {
 	}
 	
 	public boolean read(String tclassID) throws CommException {
-		loadDBDriver();
-		connectDB();
+		Connection conn = connectDB();
 		try {
 			Statement stmt = conn.createStatement();
 			String sql = "select * from Tclass where tclassID='" + tclassID + "'";
@@ -56,20 +55,19 @@ public class TclassBean extends Persistence {
 				this.numOfStud = rs.getInt("numOfStud");
 				this.studRep = rs.getString("studRep");
 			} else {
-				disconnectDB();
+				disconnectDB(conn);
 				return false;
 			}
 		} catch (SQLException e) {
 			throw new CommException("读班级数据失败！");
 		} finally {
-			disconnectDB();
+			disconnectDB(conn);
 		}
 		return true;
 	}
 	
 	public boolean write() throws CommException {
-		loadDBDriver();
-		connectDB();
+		Connection conn = connectDB();
 		try {
 			Statement stmt = conn.createStatement();
 			String sql = "update Tclass set " + 
@@ -78,20 +76,19 @@ public class TclassBean extends Persistence {
 						 "where tclassID='" + tclassID + "'";
 			int count = stmt.executeUpdate(sql);
 			if (count == 0) {
-				disconnectDB();
+				disconnectDB(conn);
 				return false;
 			}
 		} catch (SQLException e) {
 			throw new CommException("写班级数据失败！");
 		} finally {
-			disconnectDB();	
+			disconnectDB(conn);	
 		}
 		return true;
 	}
 	
 	public boolean insert() throws CommException {
-		loadDBDriver();
-		connectDB();
+		Connection conn = connectDB();
 		try {
 			Statement stmt = conn.createStatement();
 			String sql = "insert into Tclass values(" + 
@@ -101,45 +98,42 @@ public class TclassBean extends Persistence {
 						 "'" + studRep + "')";	
 			int count = stmt.executeUpdate(sql);
 			if (count == 0) {
-				disconnectDB();
+				disconnectDB(conn);
 				return false;
 			}			
 		} catch (SQLException e) {
 			throw new CommException("插入班级数据失败！");
 		} finally {
-			disconnectDB();
+			disconnectDB(conn);
 		}
 		return true;
 	}
 	
 	public boolean delete(String tclassID) throws CommException {
-		loadDBDriver();
-		connectDB();
+		Connection conn = connectDB();
 		try {
 			Statement stmt = conn.createStatement();
 			String sql = "delete from Tclass where tclassID='" + tclassID + "'";
 			int count = stmt.executeUpdate(sql);
 			if (count == 0) {
-				disconnectDB();
+				disconnectDB(conn);
 				return false;
 			}			
 		} catch (SQLException e) {
 			throw new CommException("删除班级数据失败！");
 		} finally {
-			disconnectDB();
+			disconnectDB(conn);
 		}
 		return true;
 	}
 	
 	public static ArrayList<TclassBean> readList(String condition) 
 			throws CommException {
-		Persistence pst = new Persistence();
-		pst.loadDBDriver();
-		pst.connectDB();
+		Connection conn = connectDB();
 		ArrayList<TclassBean> tclassList;
 		try {
 			tclassList = new ArrayList<TclassBean>();
-			Statement stmt = pst.conn.createStatement();
+			Statement stmt = conn.createStatement();
 			String sql = "select * from Tclass where " + condition;
 			ResultSet rs = stmt.executeQuery(sql);
 			while (rs.next()) {
@@ -153,7 +147,7 @@ public class TclassBean extends Persistence {
 		} catch (SQLException e) {
 			throw new CommException("读班级数据列表失败！");
 		} finally {
-			pst.disconnectDB();
+			disconnectDB(conn);
 		}
 		return tclassList;
 	}

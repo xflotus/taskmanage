@@ -1,11 +1,12 @@
 package taskmanage.student;
 import java.sql.*;
+import java.util.*;
 import taskmanage.comm.*;
 
 public class StudentBean extends PersonBean {
-	String tele;
-	String email;
-	String tclassID;
+	private String tele;
+	private String email;
+	private String tclassID;
 	
 	public String getTele() {
 		return tele;
@@ -32,8 +33,7 @@ public class StudentBean extends PersonBean {
 	}
 	
 	public boolean read(String studentID) throws CommException {
-		loadDBDriver();
-		connectDB();
+		Connection conn = connectDB();
 		try {
 			Statement stmt = conn.createStatement();
 			String sql = "select * from Student where personID='" + studentID + "'";
@@ -49,20 +49,19 @@ public class StudentBean extends PersonBean {
 				this.email = rs.getString("email");
 				this.tclassID = rs.getString("tclassID");
 			} else {
-				disconnectDB();
+				disconnectDB(conn);
 				return false;
 			}
 		} catch (SQLException e) {
 			throw new CommException("读学生数据失败！");
 		} finally {
-			disconnectDB();
+			disconnectDB(conn);
 		}
 		return true;
 	}
 	
 	public boolean write() throws CommException {
-		loadDBDriver();
-		connectDB();
+		Connection conn = connectDB();
 		try {
 			Statement stmt = conn.createStatement();
 			String sql = "update Student set " + 
@@ -71,24 +70,23 @@ public class StudentBean extends PersonBean {
 						 "password='" + password + "', " +
 						 "tele='" + tele + "', " +	
 						 "email='" + email + "', " +
-						 "tclassID='" + tclassID + "', " +
+						 "tclassID='" + tclassID + "' " +
 						 "where personID='" + personID + "'";
 			int count = stmt.executeUpdate(sql);
 			if (count == 0) {
-				disconnectDB();
+				disconnectDB(conn);
 				return false;
 			}
 		} catch (SQLException e) {
 			throw new CommException("写学生数据失败！");
 		} finally {
-			disconnectDB();	
+			disconnectDB(conn);	
 		}
 		return true;
 	}
 	
 	public boolean insert() throws CommException {
-		loadDBDriver();
-		connectDB();
+		Connection conn = connectDB();
 		try {
 			Statement stmt = conn.createStatement();
 			String sql = "insert into Student values(" + 
@@ -100,35 +98,59 @@ public class StudentBean extends PersonBean {
 						 "'" + tclassID + "') ";
 			int count = stmt.executeUpdate(sql);
 			if (count == 0) {
-				disconnectDB();
+				disconnectDB(conn);
 				return false;
 			}			
 		} catch (SQLException e) {
 			throw new CommException("插入学生数据失败！");
 		} finally {
-			disconnectDB();
+			disconnectDB(conn);
 		}
 		return true;
 	}
 	
 	public boolean delete(String studentID) throws CommException {
-		loadDBDriver();
-		connectDB();
+		Connection conn = connectDB();
 		try {
 			Statement stmt = conn.createStatement();
 			String sql = "delete from Student where personID='" + studentID + "'";
 			int count = stmt.executeUpdate(sql);
 			if (count == 0) {
-				disconnectDB();
+				disconnectDB(conn);
 				return false;
 			}			
 		} catch (SQLException e) {
 			throw new CommException("删除学生数据失败！");
 		} finally {
-			disconnectDB();
+			disconnectDB(conn);
 		}
 		return true;
 	}
 	
-	// 由于学生数据数据量较大，因此不设计读入内存的Map。
+	public static ArrayList<StudentBean> readList(String condition) 
+			throws CommException {
+		Connection conn = connectDB();
+		ArrayList<StudentBean> studentList;
+		try {
+			studentList = new ArrayList<StudentBean>();
+			Statement stmt = conn.createStatement();
+			String sql = "select * from Student where " + condition;
+			ResultSet rs = stmt.executeQuery(sql);
+			while (rs.next()) {
+				StudentBean student = new StudentBean();
+				student.setPersonID(rs.getString("personID"));
+				student.setPersonName(rs.getString("personName"));
+				student.setPassword(rs.getString("password"));
+				student.setTele(rs.getString("tele"));
+				student.setEmail(rs.getString("email"));
+				student.setTclassID(rs.getString("tclassID"));
+				studentList.add(student);
+			}
+		} catch (SQLException e) {
+			throw new CommException("读学生数据列表失败！");
+		} finally {
+			disconnectDB(conn);
+		}
+		return studentList;
+	}
 }

@@ -4,10 +4,8 @@ import java.sql.*;
 import taskmanage.admin.*;
 
 public class Persistence {
-	public Connection conn;
-
-	public void loadDBDriver() throws CommException {
-		String dbdriver = SystemBean.system.getDbdriver();
+	private static void loadDBDriver() throws CommException {
+		String dbdriver = SystemBean.getDbdriver();
 		try {
 			Class.forName(dbdriver);
 		} catch (Exception e) {
@@ -15,20 +13,22 @@ public class Persistence {
 		}
 	}
 	
-	public void connectDB() throws CommException {
-		if (conn != null) return;
+	public static Connection connectDB() throws CommException {
+		Connection conn;
 		try {
-			String dburl = SystemBean.system.getDburl();
-			String dbuser = SystemBean.system.getDbuser();
-			String dbpassword = SystemBean.system.getDbpassword();
+			loadDBDriver();
+			String dburl = SystemBean.getDburl();
+			String dbuser = SystemBean.getDbuser();
+			String dbpassword = SystemBean.getDbpassword();
 			conn = DriverManager.getConnection(dburl, dbuser, dbpassword);
 
 		} catch (SQLException e) {
 			throw new CommException("连接数据库失败！");
 		}
+		return conn;
 	}
 	
-	public void disconnectDB() throws CommException {
+	public static void disconnectDB(Connection conn) throws CommException {
 		if (conn == null) return;
 		try {
 			conn.close();
@@ -37,5 +37,4 @@ public class Persistence {
 			throw new CommException("关闭数据库失败！");
 		}
 	}
-	
 }

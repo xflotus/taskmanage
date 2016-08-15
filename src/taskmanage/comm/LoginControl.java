@@ -49,7 +49,7 @@ public class LoginControl extends HttpServlet {
 		if ("student".equals(type)) person = new StudentBean();
 		else if ("teacher".equals(type)) person = new TeacherBean();
 		else if ("admin".equals(type)) {
-			String adminPassword = SystemBean.system.getAdminPassword();
+			String adminPassword = SystemBean.getAdminPassword();
 			if (adminPassword.equals(password))
 				response.sendRedirect(succURL);
 			else

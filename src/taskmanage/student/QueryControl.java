@@ -40,54 +40,55 @@ public class QueryControl extends HttpServlet {
 		response.setContentType("text/html; charset=UTF-8");
 		request.setCharacterEncoding("UTF-8");
 		HttpSession session = request.getSession();
-		String msg = null;
-		String url = "student-query.jsp";
 		
 		// 获取参数
 		String studentID = (String)session.getAttribute("studentID");
 		String studentName = (String)session.getAttribute("studentName");
 		String tclassID = (String)session.getAttribute("tclassID");
 		String courseID = (String)session.getAttribute("courseID");
-		String teacherID = (String)session.getAttribute("teacherID");
+		String teacherID = (String)session.getAttribute("teacherID");	
 		
+		String msg = null;
+		String url = (String)session.getAttribute("pageName");
         try {
 			String condition = "courseID='" + courseID + "' and " + 
-							   "teacherID='" + teacherID + "' and " +
+							   "teacherID='" + teacherID + "' and " + 
 							   "tclassID='" + tclassID + "'";
 			ArrayList<TaskBean> taskList = TaskBean.readList(condition);
-			HashMap<Integer, TaskTableEntry> taskTEMap = new HashMap<Integer, TaskTableEntry>();
+			HashMap<Integer, TaskTableBean> taskTBMap = new HashMap<Integer, TaskTableBean>();
 			for (int i = 0; i < taskList.size(); i++) {
-				int taskID = taskList.get(i).getTaskID();
-				TaskTableEntry taskTE = new TaskTableEntry();
-				taskTE.taskName = taskList.get(i).getTaskName();
-				taskTE.isSubmitted = false;
-				taskTE.fileName = null;
-				taskTEMap.put(taskID, taskTE);
+				TaskBean task = taskList.get(i);
+				int taskID = task.getTaskID();
+				TaskTableBean taskTB = new TaskTableBean();
+				taskTB.setTaskName(task.getTaskName());
+				taskTB.setIsSubmitted(false);
+				taskTB.setFilePath(null);
+				taskTBMap.put(taskID, taskTB);
 			}
 			condition += " and studentID='" + studentID + "'";
 			ArrayList<TaskItemBean> taskItemList = TaskItemBean.readList(condition);
 			for (int i = 0; i < taskItemList.size(); i++) {
 				String extension = taskItemList.get(i).getFileExt();
 				int taskID = taskItemList.get(i).getTaskID();
-				TaskTableEntry taskTE = taskTEMap.get(taskID);
-				String taskName = taskTE.taskName;
-				String fileName = courseID + "-" + teacherID + "-" + taskName + "-" + 
+				TaskTableBean taskTB = taskTBMap.get(taskID);
+				String taskName = taskTB.getTaskName();
+				String filePath = courseID + "-" + teacherID + "-" + taskName + "-" + 
 	    				  		  studentID + "-" + studentName + "." + extension;
-				taskTE.isSubmitted = true;
-				taskTE.fileName = fileName;
+				taskTB.setIsSubmitted(true);
+				taskTB.setFilePath(filePath);
 			}
-			ArrayList<TaskTableEntry> taskTEList = new ArrayList<TaskTableEntry>();
-			for (HashMap.Entry<Integer, TaskTableEntry> entry : taskTEMap.entrySet()) {
-				TaskTableEntry taskTE = entry.getValue();
-				taskTEList.add(taskTE);
+			ArrayList<TaskTableBean> taskTBList = new ArrayList<TaskTableBean>();
+			for (HashMap.Entry<Integer, TaskTableBean> entry : taskTBMap.entrySet()) {
+				TaskTableBean taskTB = entry.getValue();
+				taskTBList.add(taskTB);
 			} 
-			Comparator<TaskTableEntry> comparator = new Comparator<TaskTableEntry>() {
-				   public int compare(TaskTableEntry t1, TaskTableEntry t2) {
-					   return t1.taskName.compareTo(t2.taskName);
+			Comparator<TaskTableBean> comparator = new Comparator<TaskTableBean>() {
+				   public int compare(TaskTableBean t1, TaskTableBean t2) {
+					   return t1.getTaskName().compareTo(t2.getTaskName());
 				   }
 			};
-			Collections.sort(taskTEList, comparator);
-			session.setAttribute("taskTEList", taskTEList);
+			Collections.sort(taskTBList, comparator);
+			session.setAttribute("taskTBList", taskTBList);
 			msg = "";
         } catch (CommException e) {
         	msg = e.getMessage();
@@ -98,7 +99,8 @@ public class QueryControl extends HttpServlet {
 	/**
 	 * @see HttpServlet#doPost(HttpServletRequest request, HttpServletResponse response)
 	 */
-	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+	protected void doPost(HttpServletRequest request, HttpServletResponse response) 
+			throws ServletException, IOException {
 		// TODO Auto-generated method stub
 		doGet(request, response);
 	}

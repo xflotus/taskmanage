@@ -35,8 +35,7 @@ public class TaskItemBean extends Persistence {
 	public boolean read(String taskName, String courseID, String tclassID, 
 						String teacherID, String studentID)
 			throws CommException {
-		loadDBDriver();
-		connectDB();
+		Connection conn = connectDB();
 		try {
 			Statement stmt = conn.createStatement();
 			String sql = "select taskitem.* from task, taskitem where " + 
@@ -55,20 +54,19 @@ public class TaskItemBean extends Persistence {
 				this.studentID = rs.getString("studentID");
 				this.fileExt = rs.getString("fileExt");
 			} else {
-				disconnectDB();
+				disconnectDB(conn);
 				return false;
 			}
 		} catch (SQLException e) {
 			throw new CommException("读作业项数据失败！");
 		} finally {
-			disconnectDB();
+			disconnectDB(conn);
 		}
 		return true;
 	}
 	
 	public boolean write() throws CommException {
-		loadDBDriver();
-		connectDB();
+		Connection conn = connectDB();
 		try {
 			Statement stmt = conn.createStatement();
 			String sql = "update TaskItem set " + 
@@ -78,20 +76,19 @@ public class TaskItemBean extends Persistence {
 						 "where taskID='" + taskID + "' and studentID='" + studentID + "'";
 			int count = stmt.executeUpdate(sql);
 			if (count == 0) {
-				disconnectDB();
+				disconnectDB(conn);
 				return false;
 			}
 		} catch (SQLException e) {
 			throw new CommException("写作业项数据失败！");
 		} finally {
-			disconnectDB();	
+			disconnectDB(conn);	
 		}
 		return true;
 	}
 	
 	public boolean insert() throws CommException {
-		loadDBDriver();
-		connectDB();
+		Connection conn = connectDB();
 		try {
 			Statement stmt = conn.createStatement();
 			String sql = "insert into TaskItem values(" + 
@@ -100,26 +97,24 @@ public class TaskItemBean extends Persistence {
 						 "'" + fileExt + "')";
 			int count = stmt.executeUpdate(sql);
 			if (count == 0) {
-				disconnectDB();
+				disconnectDB(conn);
 				return false;
 			}			
 		} catch (SQLException e) {
 			throw new CommException("插入作业项数据失败！");
 		} finally {
-			disconnectDB();
+			disconnectDB(conn);
 		}
 		return true;
 	}
 	
 	public static ArrayList<TaskItemBean> readList(String condition) 
 			throws CommException {
-		Persistence pst = new Persistence();
-		pst.loadDBDriver();
-		pst.connectDB();
+		Connection conn = connectDB();
 		ArrayList<TaskItemBean> taskItemList;
 		try {
 			taskItemList = new ArrayList<TaskItemBean>();
-			Statement stmt = pst.conn.createStatement();
+			Statement stmt = conn.createStatement();
 			String sql = "select TaskItem.* from Task, TaskItem where Task.taskID=TaskItem.taskID and " + condition;
 			ResultSet rs = stmt.executeQuery(sql);
 			while (rs.next()) {
@@ -135,7 +130,7 @@ public class TaskItemBean extends Persistence {
 		} catch (SQLException e) {
 			throw new CommException("读作业项数据列表失败！");
 		} finally {
-			pst.disconnectDB();
+			disconnectDB(conn);
 		}
 		return taskItemList;
 	}

@@ -1,8 +1,8 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8"
     pageEncoding="UTF-8"%>
+    <%@ page import="java.util.*" %>
 <%@ page import="taskmanage.comm.*" %>
 <%@ page import="taskmanage.teacher.*" %>
-<%@ page import="java.util.*" %>
 
 <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
 <html>
@@ -14,18 +14,17 @@
 <%
 //获取登录教师的工号和姓名
 TeacherBean teacher = (TeacherBean)session.getAttribute("person");
-String teacherID = (String)session.getAttribute("teacherID");
-if (teacherID == null) {
-	teacherID = teacher.getPersonID();
-	session.setAttribute("teacherID", teacherID);
-}
-String teacherName = (String)session.getAttribute("teacherName");
-if (teacherName == null) {
-	teacherName = teacher.getPersonName();
-	session.setAttribute("teacherName", teacherName);
-}
+String teacherID = teacher.getPersonID();
+session.setAttribute("teacherID", teacherID);
+String teacherName = teacher.getPersonName();
+session.setAttribute("teacherName", teacherName);
 out.println("工号：" + teacherID);
 out.println("姓名：" + teacherName);
+
+//获取班级编号和课程编号
+String tclassID = (String)session.getAttribute("tclassID");
+String courseID = (String)session.getAttribute("courseID");
+String taskName = (String)session.getAttribute("taskName");
 
 // 获取班级列表和课程列表
 @SuppressWarnings("unchecked")
@@ -38,7 +37,7 @@ if (tclassList == null) {
 		   }
 	};
 	Collections.sort(tclassList, comparator1);
-	session.setAttribute("teacherList", tclassList);
+	session.setAttribute("tclassList", tclassList);
 }
 @SuppressWarnings("unchecked")
 ArrayList<CourseBean> courseList = (ArrayList<CourseBean>)session.getAttribute("courseList");
@@ -52,11 +51,6 @@ if (courseList == null) {
 	Collections.sort(courseList, comparator2);
 	session.setAttribute("courseList", courseList);
 }
-
-// 获取班级编号和课程编号
-String tclassID = (String)session.getAttribute("tclassID");
-String courseID = (String)session.getAttribute("courseID");
-String taskName = (String)session.getAttribute("taskName");
 %>
 
 <form name="myform" action="?action=submit" method="post">

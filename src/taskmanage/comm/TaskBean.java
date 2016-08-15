@@ -61,8 +61,7 @@ public class TaskBean extends Persistence {
 	
 	public boolean read(String taskName, String courseID, String tclassID, String teacherID) 
 			throws CommException {
-		loadDBDriver();
-		connectDB();
+		Connection conn = connectDB();
 		try {
 			Statement stmt = conn.createStatement();
 			String sql = "select * from Task where " + 
@@ -82,20 +81,19 @@ public class TaskBean extends Persistence {
 				this.tclassID = rs.getString("tclassID");
 				this.teacherID = rs.getString("teacherID");
 			} else {
-				disconnectDB();
+				disconnectDB(conn);
 				return false;
 			}
 		} catch (SQLException e) {
 			throw new CommException("读作业数据失败！");
 		} finally {
-			disconnectDB();
+			disconnectDB(conn);
 		}
 		return true;
 	}
 	
 	public boolean write() throws CommException {
-		loadDBDriver();
-		connectDB();
+		Connection conn = connectDB();
 		try {
 			Statement stmt = conn.createStatement();
 			String sql = "update Task set " + 
@@ -108,20 +106,19 @@ public class TaskBean extends Persistence {
 					"where taskName='" + taskName + "'";
 			int count = stmt.executeUpdate(sql);
 			if (count == 0) {
-				disconnectDB();
+				disconnectDB(conn);
 				return false;
 			}
 		} catch (SQLException e) {
 			throw new CommException("写作业数据失败！");
 		} finally {
-			disconnectDB();	
+			disconnectDB(conn);	
 		}
 		return true;
 	}
 	
 	public boolean insert() throws CommException {
-		loadDBDriver();
-		connectDB();
+		Connection conn = connectDB();
 		try {
 			Statement stmt = conn.createStatement();
 			String sql = "insert into Task values(null, " + 
@@ -132,21 +129,20 @@ public class TaskBean extends Persistence {
 					"'" + teacherID + "')";	
 			int count = stmt.executeUpdate(sql);
 			if (count == 0) {
-				disconnectDB();
+				disconnectDB(conn);
 				return false;
 			}			
 		} catch (SQLException e) {
 			throw new CommException("插入作业数据失败！");
 		} finally {
-			disconnectDB();
+			disconnectDB(conn);
 		}
 		return true;
 	}
 	
 	public boolean delete(String taskName, String courseID, String tclassID, String teacherID) 
 			throws CommException {
-		loadDBDriver();
-		connectDB();
+		Connection conn = connectDB();
 		try {
 			Statement stmt = conn.createStatement();
 			String sql = "delete from Task where " + 
@@ -156,26 +152,24 @@ public class TaskBean extends Persistence {
 						 "teacherID='" + teacherID + "'";
 			int count = stmt.executeUpdate(sql);
 			if (count == 0) {
-				disconnectDB();
+				disconnectDB(conn);
 				return false;
 			}			
 		} catch (SQLException e) {
 			throw new CommException("删除作业数据失败！");
 		} finally {
-			disconnectDB();
+			disconnectDB(conn);
 		}
 		return true;
 	}
 	
 	public static ArrayList<TaskBean> readList(String condition) 
 			throws CommException {
-		Persistence pst = new Persistence();
-		pst.loadDBDriver();
-		pst.connectDB();
+		Connection conn = connectDB();
 		ArrayList<TaskBean> taskList;
 		try {
 			taskList = new ArrayList<TaskBean>();
-			Statement stmt = pst.conn.createStatement();
+			Statement stmt = conn.createStatement();
 			String sql = "select * from Task where " + condition;
 			ResultSet rs = stmt.executeQuery(sql);
 			while (rs.next()) {
@@ -191,7 +185,7 @@ public class TaskBean extends Persistence {
 		} catch (SQLException e) {
 			throw new CommException("读作业数据列表失败！");
 		} finally {
-			pst.disconnectDB();
+			disconnectDB(conn);
 		}
 		return taskList;
 	}
