@@ -61,117 +61,90 @@ public class TaskBean extends Persistence {
 	
 	public boolean read(String taskName, String courseID, String tclassID, String teacherID) 
 			throws CommException {
-		Connection conn = connectDB();
 		try {
-			Statement stmt = conn.createStatement();
-			String sql = "select * from Task where " + 
-						 "taskName='" + taskName + "' and " + 
-						 "courseID='" + courseID + "' and " + 
-						 "tclassID='" + tclassID + "' and " + 
-						 "teacherID='" + teacherID + "'";
-			ResultSet rs = stmt.executeQuery(sql);
+			Connection conn = connectDB();
+			String condition = "taskName='" + taskName + "' and " + 
+				 	   		   "courseID='" + courseID + "' and " + 
+				 	   		   "tclassID='" + tclassID + "' and " + 
+				 	   		   "teacherID='" + teacherID + "'";
+			ResultSet rs = readDB(conn, "Task", condition);
 			rs.last();
-			int recs = rs.getRow(); 
-			if (recs == 1) {
-				rs.first();
-				this.taskID = rs.getInt("taskID");
-				this.taskName = rs.getString("taskName");
-				this.taskDesc = rs.getString("taskDesc");
-				this.courseID = rs.getString("courseID");
-				this.tclassID = rs.getString("tclassID");
-				this.teacherID = rs.getString("teacherID");
-			} else {
-				disconnectDB(conn);
-				return false;
-			}
-		} catch (SQLException e) {
-			throw new CommException("读作业数据失败！");
-		} finally {
+			if (rs.getRow() != 1) return false;
+			rs.first();
+			this.taskID = rs.getInt("taskID");
+			this.taskName = rs.getString("taskName");
+			this.taskDesc = rs.getString("taskDesc");
+			this.courseID = rs.getString("courseID");
+			this.tclassID = rs.getString("tclassID");
+			this.teacherID = rs.getString("teacherID");
 			disconnectDB(conn);
+			return true;
+		} catch (SQLException e) {
+			String msg = "数据库查询错误：作业";
+			throw new CommException(msg);
+		} catch (CommException e) {
+			String msg = e.getMessage() + "作业";
+			throw new CommException(msg);
 		}
-		return true;
 	}
 	
-	public boolean write() throws CommException {
-		Connection conn = connectDB();
+	public void write() throws CommException {
 		try {
-			Statement stmt = conn.createStatement();
-			String sql = "update Task set " + 
-					"taskID='" + taskID + "', " +
-					"taskName='" + taskName + "', " +
-					"taskDesc='" + taskDesc + "', " +
-					"courseID='" + courseID + "', " +
-					"tclassID='" + tclassID + "', " +	
-					"teacherID='" + teacherID + "' " +
-					"where taskName='" + taskName + "'";
-			int count = stmt.executeUpdate(sql);
-			if (count == 0) {
-				disconnectDB(conn);
-				return false;
-			}
-		} catch (SQLException e) {
-			throw new CommException("写作业数据失败！");
-		} finally {
-			disconnectDB(conn);	
-		}
-		return true;
-	}
-	
-	public boolean insert() throws CommException {
-		Connection conn = connectDB();
-		try {
-			Statement stmt = conn.createStatement();
-			String sql = "insert into Task values(null, " + 
-					"'" + taskName + "', " +
-					"'" + taskDesc + "', " +
-					"'" + courseID + "', " + 
-					"'" + tclassID + "', " + 
-					"'" + teacherID + "')";	
-			int count = stmt.executeUpdate(sql);
-			if (count == 0) {
-				disconnectDB(conn);
-				return false;
-			}			
-		} catch (SQLException e) {
-			throw new CommException("插入作业数据失败！");
-		} finally {
+			Connection conn = connectDB();
+			String condition = "taskID='" + taskID + "', " +
+						 	   "taskName='" + taskName + "', " +
+						 	   "taskDesc='" + taskDesc + "', " +
+						 	   "courseID='" + courseID + "', " +
+						 	   "tclassID='" + tclassID + "', " +	
+						 	   "teacherID='" + teacherID + "' " +
+						 	   "where taskName='" + taskName + "'";
+			writeDB(conn, "Task", condition);
 			disconnectDB(conn);
+		} catch (CommException e) {
+			String msg = e.getMessage() + "作业";
+			throw new CommException(msg);
 		}
-		return true;
 	}
 	
-	public boolean delete(String taskName, String courseID, String tclassID, String teacherID) 
+	public void insert() throws CommException {
+		try {
+			Connection conn = connectDB();
+			String condition = "values(null, " + 
+							   "'" + taskName + "', " +
+							   "'" + taskDesc + "', " +
+							   "'" + courseID + "', " + 
+							   "'" + tclassID + "', " + 
+							   "'" + teacherID + "')";
+			insertDB(conn, "Task", condition);
+			disconnectDB(conn);
+		} catch (CommException e) {
+			String msg = e.getMessage() + "作业";
+			throw new CommException(msg);
+		}
+	}
+	
+	public void delete(String taskName, String courseID, String tclassID, String teacherID) 
 			throws CommException {
-		Connection conn = connectDB();
 		try {
-			Statement stmt = conn.createStatement();
-			String sql = "delete from Task where " + 
-						 "taskName='" + taskName + "' and " +
-						 "courseID='" + courseID + "' and " +
-						 "tclassID='" + tclassID + "' and " +
-						 "teacherID='" + teacherID + "'";
-			int count = stmt.executeUpdate(sql);
-			if (count == 0) {
-				disconnectDB(conn);
-				return false;
-			}			
-		} catch (SQLException e) {
-			throw new CommException("删除作业数据失败！");
-		} finally {
+			Connection conn = connectDB();
+			String condition = "taskName='" + taskName + "' and " +
+							   "courseID='" + courseID + "' and " +
+							   "tclassID='" + tclassID + "' and " +
+							   "teacherID='" + teacherID + "'";
+			deleteDB(conn, "Task", condition);
 			disconnectDB(conn);
+		} catch (CommException e) {
+			String msg = e.getMessage() + "作业";
+			throw new CommException(msg);
 		}
-		return true;
 	}
 	
 	public static ArrayList<TaskBean> readList(String condition) 
 			throws CommException {
-		Connection conn = connectDB();
-		ArrayList<TaskBean> taskList;
 		try {
-			taskList = new ArrayList<TaskBean>();
-			Statement stmt = conn.createStatement();
-			String sql = "select * from Task where " + condition;
-			ResultSet rs = stmt.executeQuery(sql);
+			Connection conn = connectDB();
+			ResultSet rs = readDB(conn, "Task", condition);;
+			ArrayList<TaskBean> taskList = new ArrayList<TaskBean>();
 			while (rs.next()) {
 				TaskBean task = new TaskBean();
 				task.setTaskID(rs.getInt("taskID"));
@@ -182,12 +155,14 @@ public class TaskBean extends Persistence {
 				task.setTeacherID(rs.getString("teacherID"));
 				taskList.add(task);
 			}
-		} catch (SQLException e) {
-			throw new CommException("读作业数据列表失败！");
-		} finally {
 			disconnectDB(conn);
+			return taskList;
+		} catch (SQLException e) {
+			String msg = "数据库查询错误：作业";
+			throw new CommException(msg);
+		} catch (CommException e) {
+			String msg = e.getMessage() + "作业";
+			throw new CommException(msg);
 		}
-		return taskList;
 	}
-	
 }

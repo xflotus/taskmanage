@@ -6,100 +6,75 @@ import java.util.*;
 public class TeacherBean extends PersonBean {
 	
 	public boolean read(String teacherID) throws CommException {
-		Connection conn = connectDB();
 		try {
-			Statement stmt = conn.createStatement();
-			String sql = "select * from Teacher where personID='" + teacherID + "'";
-			ResultSet rs = stmt.executeQuery(sql);
+			Connection conn = connectDB();
+			String condition = "personID='" + teacherID + "'";
+			ResultSet rs = readDB(conn, "Teacher", condition);
 			rs.last();
-			int recs = rs.getRow(); 
-			if (recs == 1) {
-				rs.first();
-				personID = rs.getString("personID");
-				personName = rs.getString("personName");
-				password = rs.getString("password");
-			} else {
-				disconnectDB(conn);
-				return false;
-			}
-		} catch (SQLException e) {
-			throw new CommException("读教师数据失败！");
-		} finally {
+			if (rs.getRow() != 1) return false;
+			rs.first();
+			personID = rs.getString("personID");
+			personName = rs.getString("personName");
+			password = rs.getString("password");
 			disconnectDB(conn);
+			return true;
+		} catch (SQLException e) {
+			String msg = "数据库查询错误：教师";
+			throw new CommException(msg);
+		} catch (CommException e) {
+			String msg = e.getMessage() + "教师";
+			throw new CommException(msg);
 		}
-		return true;
 	}
 	
-	public boolean write() throws CommException {
-		Connection conn = connectDB();
+	public void write() throws CommException {
 		try {
-			Statement stmt = conn.createStatement();
-			String sql = "update Teacher set " + 
-						 "personID='" + personID + "'" +
-						 "personName='" + personName + "'" +
-						 "password='" + password + "'" +
-						 "where personID='" + personID + "'";
-			int count = stmt.executeUpdate(sql);
-			if (count == 0) {
-				disconnectDB(conn);
-				return false;
-			}
-		} catch (SQLException e) {
-			throw new CommException("写教师数据失败！");
-		} finally {
-			disconnectDB(conn);		
+			Connection conn = connectDB();
+			String condition = "personID='" + personID + "'" +
+							   "personName='" + personName + "'" +
+							   "password='" + password + "' " +
+							   "where personID='" + personID + "'";
+			writeDB(conn, "Teacher", condition);
+			disconnectDB(conn);
+		} catch (CommException e) {
+			String msg = e.getMessage() + "教师";
+			throw new CommException(msg);
 		}
-		return true;
 	}
 	
-	public boolean insert() throws CommException {
-		Connection conn = connectDB();
+	public void insert() throws CommException {
 		try {
-			Statement stmt = conn.createStatement();
-			String sql = "insert into Teacher values(" + 
-						 "'" + personID + "', " +
-						 "'" + personName + "', " +
-						 "'" + password + "') ";
-			int count = stmt.executeUpdate(sql);
-			if (count == 0) {
-				disconnectDB(conn);
-				return false;
-			}			
-		} catch (SQLException e) {
-			throw new CommException("插入教师数据失败！");
-		} finally {
+			Connection conn = connectDB();
+			String condition = "values(" + 
+							   "'" + personID + "', " +
+							   "'" + personName + "', " +
+							   "'" + password + "') ";
+			insertDB(conn, "Teacher", condition);
 			disconnectDB(conn);
+		} catch (CommException e) {
+			String msg = e.getMessage() + "教师";
+			throw new CommException(msg);
 		}
-		return true;
 	}
 	
-	public boolean delete(String teacherID) throws CommException {
-		Connection conn = connectDB();
+	public void delete(String teacherID) throws CommException {
 		try {
-			Statement stmt = conn.createStatement();
-			String sql = "delete from Teacher where personID='" + teacherID + "'";
-			int count = stmt.executeUpdate(sql);
-			if (count == 0) {
-				disconnectDB(conn);
-				return false;
-			}			
-		} catch (SQLException e) {
-			throw new CommException("删除教师数据失败！");
-		} finally {
+			Connection conn = connectDB();
+			String condition = "personID='" + teacherID + "'";
+			deleteDB(conn, "Teacher", condition);
 			disconnectDB(conn);
+		} catch (CommException e) {
+			String msg = e.getMessage() + "教师";
+			throw new CommException(msg);
 		}
-		return true;
 	}
 	
 	public static ArrayList<TeacherBean> readList(String condition) 
 			throws CommException {
-		Connection conn = connectDB();
-		ArrayList<TeacherBean> teacherList;
 		try {
-			teacherList = new ArrayList<TeacherBean>();
-			Statement stmt = conn.createStatement();
-			String sql = "select * from Teacher where " + condition;
-			ResultSet rs = stmt.executeQuery(sql);
+			Connection conn = connectDB();
+			ResultSet rs = readDB(conn, "Teacher", condition);
+			ArrayList<TeacherBean> teacherList = new ArrayList<TeacherBean>();
 			while (rs.next()) {
 				TeacherBean teacher = new TeacherBean();
 				teacher.setPersonID(rs.getString("personID"));
@@ -107,11 +82,14 @@ public class TeacherBean extends PersonBean {
 				teacher.setPassword(rs.getString("password"));
 				teacherList.add(teacher);
 			}
+			disconnectDB(conn);
+			return teacherList;
 		} catch (SQLException e) {
-			throw new CommException("读教师数据列表失败！");
+			String msg = "数据库查询错误：教师";
+			throw new CommException(msg);
+		} catch (CommException e) {
+			String msg = e.getMessage() + "教师";
+			throw new CommException(msg);
 		}
-		disconnectDB(conn);
-		return teacherList;
 	}
-
 }

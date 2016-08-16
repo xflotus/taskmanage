@@ -54,11 +54,8 @@ public class AssignControl extends HttpServlet {
 				task.setCourseID(courseID);
 				task.setTclassID(tclassID);
 				task.setTeacherID(teacherID);
-				ok = task.insert();
-				if (!ok)
-					msg = "作业数据无法存入数据库！";
-				else
-					msg = "布置作业成功！";
+				task.insert();
+				msg = "布置作业成功！";
 			} else
 				msg = "作业编号已经存在！";
 		} catch(CommException e) {
@@ -70,7 +67,8 @@ public class AssignControl extends HttpServlet {
 	/**
 	 * @see HttpServlet#doPost(HttpServletRequest request, HttpServletResponse response)
 	 */
-	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+	protected void doPost(HttpServletRequest request, HttpServletResponse response) 
+			throws ServletException, IOException {
 		// TODO Auto-generated method stub
 		doGet(request, response);
 	}

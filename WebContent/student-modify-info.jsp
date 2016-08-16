@@ -11,11 +11,11 @@
 <title> 修改个人信息 </title>
 <script>
 
-function refresh(action) {
-	var url = "?action=" + action;
-	document.myform1.action = url;
-	document.myform1.submit();
-}
+	function refresh(action) {
+		var url = "?action=" + action;
+		document.myform1.action = url;
+		document.myform1.submit();
+	}
 
 </script>
 </head>
@@ -70,10 +70,10 @@ function refresh(action) {
 		student.setTele(tele);
 		student.setEmail(email);
 		try {
-			boolean ok = student.write();
-			if (!ok) out.println("信息更新失败！");
+			student.write();
 		} catch (CommException e) {
-			out.println(e.getMessage());
+			String msg = "信息更新失败：" + e.getMessage();
+			out.println(msg);
 		}
 		out.println("<script>");
 		out.println("refresh('getinfo');");
@@ -92,12 +92,12 @@ function refresh(action) {
 		else {
 			student.setPassword(newpassword1);
 			try {
-				boolean ok = student.write();
-				if (!ok) out.println("口令修改失败！");
+				student.write();
+				out.println("口令修改成功！");
 			} catch (CommException e) {
-				out.println(e.getMessage());
+				String msg = "口令修改失败：" + e.getMessage();
+				out.println(msg);
 			}
-			out.println("口令修改成功！");
 		}
 	} else 
 		;

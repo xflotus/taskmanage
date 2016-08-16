@@ -29,19 +29,16 @@ public class PersonBean extends Persistence {
 		this.password = password;
 	}
 
-	public boolean read(String key) throws CommException {
+	public boolean read(String personID) throws CommException {
 		return true;
 	}
 	
-	public boolean write() throws CommException {
-		return true;
+	public void write() throws CommException {
 	}
 	
-	public boolean inset() throws CommException {
-		return true;
+	public void inset() throws CommException {
 	}
 	
-	public boolean delete(String key) throws CommException {
-		return true;
+	public void delete(String personID) throws CommException {
 	}
 }
